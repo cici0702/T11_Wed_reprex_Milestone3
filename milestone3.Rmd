@@ -1,0 +1,70 @@
+---
+title: "Group Project"
+author: "T11_Wed_reprex"
+output: 
+  bookdown::html_document2: default
+  bookdown::pdf_document2: default
+  fig_caption: yes
+  toc: yes
+keep_md: TRUE
+---
+
+
+# Data Description
+The data we have chosen for this project is the Australian Road Deaths Database (ARDD) provided by the Australian Bureau of Infrastructure and Transport Research Economics (BITRE). The records are updated monthly from 1986 to 2021. Here is the link to the database : https://data.gov.au/dataset/ds-dga-5b530fb8-526e-4fbf-b0f6-aa24e84e4277/details. 
+
+There are two data files. The fatality data contains the demographic and details of people who have died within 30 days of the traffic accident due to injuries caused by an Australia road crash. The fatal crashes data contains the records for the crash, including information like the road type, and speed limit. The two data files can be connected by the crash ID. See Appendix for more detailed descriptions of each variable. 
+
+
+# Research Questions:
+Q1: What demographic has a higher rate of traffic accidents?
+
+Q2: Ranking of vehicle types by number of accidents
+
+Q3: How does the car accident fatality link with the district and accident type? 
+
+Q4: Is there any correlation between accidents and holiday? And why are some explanations for the relation(s) or lack thereof.
+
+Q5 :Has accident rate decreased or increased within the past decade (2010- 2020)? 
+
+Q6: Possible correlations between number of fatalities and speed limit zone 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r libraries, echo=FALSE}
+# Loading package tidyverse:
+library(tidyverse)
+library(naniar)
+library(ggplot2)
+library(kableExtra)
+```
+
+
+```{r}
+# read tidy data
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+```
+
+# Data Analysis
+
+##Q1:
+
+
+##Q2:
+
+
+##Q3:
+
+
+##Q4:
+
+
+##Q5:
+
+
+##Q6:
