@@ -65,6 +65,9 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 
 
 ##Q5:
+```{r accident rate}
+
+```
 
 
 ##Q6:
