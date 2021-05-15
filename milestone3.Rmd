@@ -46,8 +46,10 @@ library(kableExtra)
 
 ```{r}
 # read tidy data
-fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
-fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+fatalcrashes <- read.csv(here::here("T11_Wed_reprex_Milestone3/data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("T11_Wed_reprex_Milestone3/data/cleaned_fatalities.csv"))
+head(fatalcrashes)
+head(fatalities)
 ```
 
 # Data Analysis
@@ -59,7 +61,27 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 
 
 ##Q3:
+```{r}
+#How does the car accident fatality link with the district and accident type? 
+fatalcrashes %>%
+  group_by(State) %>%
+  count()
 
+bus_involved <- fatalcrashes %>%
+  filter(Bus.Involvement == "Yes") %>%
+  group_by(State)%>%
+  count()
+
+heavytruck_involved <- fatalcrashes %>%
+  filter(Heavy.Rigid.Truck.Involvement == "Yes") %>%
+  group_by(State)%>%
+  count()
+
+articulated_truck_involved <- fatalcrashes %>%
+  filter(Articulated.Truck.Involvement == "Yes") %>%
+  group_by(State)%>%
+  count()
+```
 
 ##Q4:
 
