@@ -7,6 +7,8 @@ output:
   fig_caption: yes
   toc: yes
 keep_md: TRUE
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -63,6 +65,92 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 
 ##Q4:
 
+```{r}
+holidays <- fatalcrashes %>%
+  select(State, Year, Month, Christmas.Period, Easter.Period, Time.of.day)
+```
+
+```{r}
+# detect the Christmas and Easter period month first
+holidays1 <- holidays %>%
+  select(Month, Christmas.Period, Easter.Period) %>%
+  filter(Christmas.Period == "Yes" | Easter.Period == "Yes")
+
+unique(holidays1$Month)
+```
+
++ The month shows that the Christmas period is in December and January. And the Easter period is in March and April.
+
+```{r}
+library(lubridate)
+library(plotly)
+# filter month and check the holidays
+monthly <- holidays %>%
+  group_by(Month, State)%>%
+  summarise(n = sum(Month))%>%
+  mutate(Month = as.factor(Month)) 
+  
+
+
+#draw line plot
+p1 <- ggplot(monthly, aes(x = Month, 
+                    y = n, 
+                    group = State, 
+                    color = State)) +
+  geom_line()+
+  theme_bw()
+
+ggplotly(p1)
+```
+
++ This graph illustrates the monthly increase of fatalcrashes in eight states. We can see the increasing by the slope. There is no obvious correlation between the crashes and month.  
+
+
+
+```{r}
+library(dplyr)
+# count the increase rate
+holidays_rate <- monthly %>%
+  arrange(State) %>%
+  group_by(State) %>%
+  mutate(diff = n - lag(n),
+         rate = diff / n) %>%
+  select(Month, State, rate)
+```
+
+
+```{r}
+# plot the increase rate
+p2 <- ggplot(holidays_rate)+
+  geom_col(aes(x = Month, y = rate, fill = State))+
+  scale_fill_brewer(palette = "Dark2")+
+  theme_gray()+
+  facet_wrap(~State)
+
+ggplotly(p2)
+```
+
++ Only ACT, NT, TAS has dominate increase in Christmas period.
+While all the states decrease in Easter period except NT.
+
+
+```{r}
+# check the correlation with night and day
+night <- holidays %>%
+  select(Year, Time.of.day) %>%
+  mutate(Time.of.day = as.factor(Time.of.day)) %>%
+  group_by(Year, Time.of.day) %>%
+  count()
+
+# plot the day and night by year
+p3 <- ggplot(night, 
+       aes(x = Year, y = n, fill = Time.of.day), color = "Dark2")+
+  geom_bar(stat = "identity")
+
+ggplotly(p3)
+```
+
++ Obviously, there are more crashes happen on the day.
 
 ##Q5:
 
