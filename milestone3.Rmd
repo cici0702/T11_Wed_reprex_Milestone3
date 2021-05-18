@@ -46,8 +46,8 @@ library(kableExtra)
 
 ```{r}
 # read tidy data
-fatalcrashes <- read.csv(here::here("T11_Wed_reprex_Milestone3/data/cleaned_fatalcrashes.csv"))
-fatalities <- read.csv(here::here("T11_Wed_reprex_Milestone3/data/cleaned_fatalities.csv"))
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 head(fatalcrashes)
 head(fatalities)
 ```
@@ -61,28 +61,122 @@ head(fatalities)
 
 
 ##Q3:
-```{r}
 #How does the car accident fatality link with the district and accident type? 
+
+First of all, we group the data by state and the type of car which have involved in the fatal accidents.
+```{r, eval=TRUE, echo=TRUE}
+
 fatalcrashes %>%
   group_by(State) %>%
   count()
 
+#no. of fatal accidents with bus involved
 bus_involved <- fatalcrashes %>%
   filter(Bus.Involvement == "Yes") %>%
   group_by(State)%>%
-  count()
+  count() %>%
+  rename("Bus_Involved" = n)
 
+#no. of fatal accidents with heavy truck involved
 heavytruck_involved <- fatalcrashes %>%
   filter(Heavy.Rigid.Truck.Involvement == "Yes") %>%
   group_by(State)%>%
-  count()
+  count()%>%
+  rename("Heavytruck_Involved" = n)
 
+#no. of fatal accidents with articulated truck involved
 articulated_truck_involved <- fatalcrashes %>%
   filter(Articulated.Truck.Involvement == "Yes") %>%
   group_by(State)%>%
-  count()
+  count()%>%
+  rename("Articulated_truck_Involved" = n)
+
+head(bus_involved)
+head(heavytruck_involved)
+head(articulated_truck_involved)
 ```
 
+
+```{r, eval=TRUE, echo=TRUE}
+#join the above 3 tables and turns them to long format
+accident_car_type_count <- bus_involved %>%
+  full_join(heavytruck_involved) %>%
+  full_join(articulated_truck_involved) %>%
+  pivot_longer(cols = c("Bus_Involved", "Heavytruck_Involved", "Articulated_truck_Involved"),  
+               names_to = "Type",             
+               values_to = "Count")
+head(accident_car_type_count)
+```
+In this table, we have got the count of different type of fatal accidents happened group by different states. This data is in long format which will be easier for us to plot the bar chart for better visualization. 
+
+```{r, eval=TRUE, echo=TRUE}
+#plot the bar chart for the statistic of accident car type in different states
+ggplot(accident_car_type_count, 
+       aes( x = State, y = Count, fill = Type)) + 
+  geom_col(position = "dodge") + 
+  ggtitle("Number of Fatal Accidents with Different Car Type in Different State")
+
+```
+
+From the graph above:
+ -NSW is the state with highest number of fatal accidents
+ -follows by Qld and Vic. 
+ 
+In all the states:
+ -more than half of the total fatal accidents with articulated truck involved. 
+ -Accidents with Heavy Truck involved account for the second large portion of the total accidents
+ -follow by bus involved accidents. 
+ 
+Interpretation:
+Articulated truck is the heaviest among these 3 type of cars. Heavier car impose a greater impact on any accident which cause a higher fatalities. 
+
+Articulated truck is a vehicle which has a permanent or semi-permanent pivot joint in its construction. Only large vehicles need this structure which is easier for them to turn. But it also impose an additional risk for higher fatalities in an accident due to the complex mechanical structure.
+
+
+Then, we group the data by states and the type of Road Users which have involved in the fatal accidents.
+```{r, eval=TRUE, echo=TRUE}
+#How does the car accident fatality link with the district and accident type? 
+accident_road_user_count <- fatalities %>%
+  group_by(State, Road.User) %>%
+  count() %>%
+  rename(Count = n)
+accident_road_user_count
+```
+
+```{r, eval=TRUE, echo=TRUE}
+#plot the bar chart for the statistic of accident road user type in different states
+ggplot(accident_road_user_count, 
+       aes( x = State, y = Count, fill = Road.User)) + 
+  geom_col(position = "dodge") +
+  labs(title = "Number of Fatal Accidents \nwith Different Road User in Different State")
+```
+From the graph above:
+ 
+In all the states:
+ -more than half of the total fatal accidents with drivers involved. 
+ -Accidents with Passenger involved account for the second large portion of the total accidents
+ -follow by motorcycle rider and then pedestrian involved accidents. 
+ 
+Interpretation:
+Most fatal accidents with the drivers and passengers involved. relatively less pedestrian involved in fatal car accidents. We may interpret that most of the people drive in Australia, that is the reason more drivers and passenger involved in fatal car accidents. Another interpretation is most of the car accidents happened in highway or it is a crashed between cars or crashed between car and the road.
+
+How does the car accident fatality link with the district?
+```{r, eval=TRUE, echo=TRUE}
+#no. of fatal accidents in different district **with** NA value
+district_fatalities <- fatalities %>%
+  group_by(State,National.LGA.Name.2017) %>%
+  count()%>%
+  arrange(desc(n))
+head(district_fatalities)
+
+#no. of fatal accidents in different district **without** NA value
+district_fatalities_without_NA <- fatalities %>%
+  group_by(State,National.LGA.Name.2017) %>%
+  count()%>%
+  filter(!is.na(National.LGA.Name.2017))%>%
+  arrange(desc(n))
+head(district_fatalities_without_NA)
+```
 ##Q4:
 
 
