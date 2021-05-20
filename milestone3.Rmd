@@ -65,6 +65,31 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 
 
 ##Q5:
+```{r accident rate, fig.width= 10}
+accident <- fatalcrashes %>%
+  mutate(Month = as.factor(Month),
+         Year = as.factor(Year)) %>%
+  select(-c(Bus.Involvement:Easter.Period)) %>%
+  group_by(State, Month) %>%
+  add_tally()
 
+ggplot(accident,
+       aes(x = Year,
+           fill = State))+
+  geom_bar() +
+  facet_grid(State + .~Month, scales = "free_y")+ 
+  scale_fill_brewer(palette = "Set1")+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 90))
+
+
+ggplot(accident,
+       aes(x = Month,
+           fill = State))+
+  geom_bar() +
+  facet_grid(State + .~Year, scales = "free_y")+ 
+  scale_fill_brewer(palette = "Set1")+
+  theme_minimal()
+```
 
 ##Q6:
