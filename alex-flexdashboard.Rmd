@@ -1,0 +1,155 @@
+---
+title: "alex-flexdashboard"
+author: "Hoang Phong Nguyen"
+date: "5/21/2021"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    source_code: embed
+---
+
+```{r libraries, echo=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(naniar)
+library(ggplot2)
+library(kableExtra)
+library(plotly)
+```
+
+```{r}
+# read tidy data
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+```
+
+Speed Limit Analysis {data-icon="fa-tachometer-alt"}
+====================
+
+```{r hp-clean-fatal}
+fatalities$Speed.Limit <-
+  str_replace(fatalities$Speed.Limit, "<40", "39")
+  
+fatal_sl <- fatalities %>% 
+  mutate(Speed.Limit = as.numeric(Speed.Limit)) %>% 
+  select(Crash.ID, Year, State, Speed.Limit) %>% 
+  group_by(Year, Speed.Limit) %>% 
+  count() %>% 
+  pivot_wider(names_from = Speed.Limit,
+              values_from = n) %>% 
+  mutate("<= 40" = sum(`10`, `39`, `40`, `20`, `30`, `5`, `15`, `25`, 
+                     na.rm = T)) %>% 
+  mutate("70-90" = sum(`70`, `75`, `80`, `90`, na.rm = T)) %>% 
+  mutate(">= 100" = sum(`100`, `110`, `130`, na.rm = T)) %>% 
+  select(Year, `<= 40`, `50`, `60`, `70-90`, `>= 100`) # "NA")
+```
+
+```{r hp-clean-crash}
+fatalcrashes$Speed.Limit <-
+  str_replace(fatalcrashes$Speed.Limit, "<40", "39")
+  
+crash_sl <- fatalcrashes %>% 
+  mutate(Speed.Limit = as.numeric(Speed.Limit)) %>% 
+  select(Crash.ID, Year, State, Speed.Limit) %>% 
+  group_by(Year, Speed.Limit) %>% 
+  count() %>% 
+  pivot_wider(names_from = Speed.Limit,
+              values_from = n) %>% 
+  mutate("<= 40" = sum(`10`, `39`, `40`, `20`, `30`, `5`, `15`, `25`, 
+                     na.rm = T)) %>% 
+  mutate("70-90" = sum(`70`, `75`, `80`, `90`, na.rm = T)) %>% 
+  mutate(">= 100" = sum(`100`, `110`, `130`, na.rm = T)) %>% 
+  select(Year, `<= 40`, `50`, `60`, `70-90`, `>= 100`) #, "NA")
+```
+
+Row
+------------------
+
+### Table 6.1: Yearly number of fatal crashes by speed limit
+
+```{r hp-table}
+crash_sl %>% kbl() %>% 
+  kable_minimal()
+```
+
+
+```{r hp-pivot-longer}
+crash_sl_l <- crash_sl %>% 
+  pivot_longer(crash_sl, cols = -Year, 
+             names_to = "Speed_limit", values_to = "n_crashes")
+
+fatal_sl_l <- fatal_sl %>% 
+  pivot_longer(fatal_sl, cols = -Year, 
+             names_to = "Speed_limit", values_to = "n_fatalities")
+```
+
+### Figure 6.1: Comparing proportion of yearly fatal crash by speed limit
+
+```{r hp-fig-year}
+crash_sl_l %>% mutate(Speed_limit = fct_reorder(Speed_limit, n_crashes)) %>% 
+  ggplot(aes(x = as.factor(Year), 
+             y = n_crashes, fill = Speed_limit)) +
+  geom_col(position = "fill") +
+  scale_fill_brewer(palette="Set1") +
+  theme(axis.title.x = element_blank())
+ggplotly()
+```
+
+```{r hp-clean-compare}
+comparison_crash_fatal <- 
+  left_join(crash_sl_l, fatal_sl_l, 
+            by = c("Year", "Speed_limit"))
+
+comparison_pct <- comparison_crash_fatal %>%
+  group_by(Speed_limit) %>% 
+  summarise(n_crashes = sum(n_crashes),
+         n_fatalities = sum(n_fatalities)) %>% 
+  mutate("perc_fatalities" = (n_fatalities - n_crashes)*100/n_crashes) %>% 
+  arrange(perc_fatalities)
+
+comparison_l <- comparison_pct %>% 
+  select(-perc_fatalities) %>% 
+  pivot_longer(cols = c(n_crashes, n_fatalities), 
+               names_to = "type", values_to = "n_fatal")
+```
+
+Row
+--------------
+
+### Figure 6.2: Comparing number of fatalities and fatal crashes by speed zone
+
+```{r hp-fig-compare}
+comparison_l %>% 
+  mutate(Speed_limit = fct_reorder(Speed_limit, n_fatal)) %>%
+  ggplot(aes(x = Speed_limit, 
+             y = n_fatal, fill = type)) +
+  geom_col(position = "dodge") +
+  theme_bw() +
+  labs(x = "Speed Limit (km/h)",
+       y = "Count")
+ggplotly()
+```
+
+### Figure 6.3: Percentage difference between fatalities and fatal crashes
+
+```{r hp-fig-percent-diff}
+comparison_pct %>% 
+  mutate(Speed_limit = fct_reorder(Speed_limit, perc_fatalities)) %>%
+  ggplot(aes(x = Speed_limit, y = perc_fatalities)) +
+  geom_col(fill = "light blue") +
+  theme_bw() +
+  labs(x = "Speed Limit (km/h)",
+       y = "Percent")
+  ggplotly()
+```
+
+### Analysis
+
+- Table 6.1 showed between 2010 and 2020, fatal crashes is reduced for higher speed zones but increased for lower speed zones
+
+- The speed zone >= 100 km/h accounts for nearly 50% of all fatal crashes in Australia
+
+- Number of fatal crashes and fatalities both increased with speed limits
+
+- Fatalities is 3% higher than number of fatal crashes at lower speed zone, but increase up to 13% for higher speed zone

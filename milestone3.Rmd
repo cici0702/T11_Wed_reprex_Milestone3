@@ -2,10 +2,10 @@
 title: "Group Project"
 author: "T11_Wed_reprex"
 output: 
-  flexdashboard::flex_dashboard:
-    orientation: rows
-    vertical_layout: fill
-    source_code: embed
+  bookdown::html_document2: default
+  bookdown::pdf_document2: default
+  fig_caption: yes
+  toc: yes
 keep_md: TRUE
 ---
 
@@ -42,7 +42,6 @@ library(naniar)
 library(ggplot2)
 library(kableExtra)
 library(plotly)
-library(flexdashboard)
 ```
 
 
@@ -69,10 +68,9 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 ##Q5:
 
 
-Speed Limit Analysis {data-icon="fa-tachometer-alt"}
-====================
+##Q6:
 
-```{r hp-clean-fatal}
+```{r hp-clean-fatal, echo=F}
 fatalities$Speed.Limit <-
   str_replace(fatalities$Speed.Limit, "<40", "39")
   
@@ -90,7 +88,7 @@ fatal_sl <- fatalities %>%
   select(Year, `<= 40`, `50`, `60`, `70-90`, `>= 100`) # "NA")
 ```
 
-```{r hp-clean-crash}
+```{r hp-clean-crash, echo=F}
 fatalcrashes$Speed.Limit <-
   str_replace(fatalcrashes$Speed.Limit, "<40", "39")
   
@@ -108,18 +106,19 @@ crash_sl <- fatalcrashes %>%
   select(Year, `<= 40`, `50`, `60`, `70-90`, `>= 100`) #, "NA")
 ```
 
-Row
-------------------
-
-### Table 6.1: Yearly number of fatal crashes by speed limit
 
 ```{r hp-table}
-crash_sl %>% kbl() %>% 
+crash_sl %>% kbl(caption = "Yearly number of fatal crashes by speed limit (km/h)") %>% 
   kable_minimal()
 ```
 
+### Analysis
 
-```{r hp-pivot-longer}
+The speed limits are split into 5 respective parts which is 40 and below, 50, 60, 70-90 and 100 and above, all measured in kilometer per hour (km/h). Areas which have less than 40 km/h are often shared zones, school zones and places with high density of pedestrian. 50 km/h are default speed limit within built up areas in every state in Australia except for Northern Territory. 60 km/h are sub-arterial roads, as well as the default speed within built up area in Northern Territory. 70-90 are connector and small highways. 100 and above area highways speed limits.
+
+Between 2010 and 2020, table \@ref(tab:hp-table) showed that the overall trend in fatal crashes is reduced for speed limit zones outside built-up areas but increased for zones within built-up areas. However, within the period of 2015-2016, all zones see an increase in number of fatal crashes. The number of fatal crashes reduced or increased in varying number as well as rate across the speed zones. With the speed zones of 100 and above and 60 km/h decreased by largest proportion, about 25%.
+
+```{r hp-pivot-longer, echo=F}
 crash_sl_l <- crash_sl %>% 
   pivot_longer(crash_sl, cols = -Year, 
              names_to = "Speed_limit", values_to = "n_crashes")
@@ -129,9 +128,8 @@ fatal_sl_l <- fatal_sl %>%
              names_to = "Speed_limit", values_to = "n_fatalities")
 ```
 
-### Figure 6.1: Comparing proportion of yearly fatal crash by speed limit
 
-```{r hp-fig-year}
+```{r hp-fig-year, fig.cap="Comparing proportion of yearly fatal crash by speed limit"}
 crash_sl_l %>% mutate(Speed_limit = fct_reorder(Speed_limit, n_crashes)) %>% 
   ggplot(aes(x = as.factor(Year), 
              y = n_crashes, fill = Speed_limit)) +
@@ -140,6 +138,10 @@ crash_sl_l %>% mutate(Speed_limit = fct_reorder(Speed_limit, n_crashes)) %>%
   theme(axis.title.x = element_blank())
 ggplotly()
 ```
+
+### Analysis
+
+One notable point as figure \@ref(fig:hp-fig-year) showed is throughout the period analyzed, not only is the speed zone of 100 km/h and above has highest percentage of fatal crash, but it accounts for nearly 50% of all fatal crashes in Australia. While 50 km/h and below speed zones account for less than 10% of all fatal crashes. It is generally well known that the higher the speed a vehicle is traveling at, the longer the stopping distance is, and thus fatal crash is more likely to occur on highways. Kloeden, Woolley & McLean (2007) found that following the reduction of urban speed limit from 60 to 50 km/h in South Australia in 2003, there was a 23% reduction in fatal crashes in 50 km/h zones and 16% reduction in 60 km/h zones.
 
 ```{r hp-clean-compare}
 comparison_crash_fatal <- 
@@ -159,42 +161,36 @@ comparison_l <- comparison_pct %>%
                names_to = "type", values_to = "n_fatal")
 ```
 
-Row
---------------
 
-### Figure 6.2: Comparing number of fatalities and fatal crashes by speed zone
-
-```{r hp-fig-compare}
+```{r hp-fig-compare, fig.cap="Comparing number of fatalities and fatal crashes by speed zone"}
 comparison_l %>% 
   mutate(Speed_limit = fct_reorder(Speed_limit, n_fatal)) %>%
   ggplot(aes(x = Speed_limit, 
              y = n_fatal, fill = type)) +
   geom_col(position = "dodge") +
   theme_bw() +
-  labs(x = "Speed Limit",
+  labs(x = "Speed Limit (km/h)",
        y = "Count")
 ggplotly()
 ```
 
-### Figure 6.3: Percentage difference between fatalities and fatal crashes
 
-```{r hp-fig-percent-diff}
+
+```{r hp-fig-percent-diff, fig.cap="Percentage difference between fatalities and fatal crashes"}
 comparison_pct %>% 
   mutate(Speed_limit = fct_reorder(Speed_limit, perc_fatalities)) %>%
   ggplot(aes(x = Speed_limit, y = perc_fatalities)) +
   geom_col(fill = "light blue") +
   theme_bw() +
-  labs(x = "Speed Limit",
+  labs(x = "Speed Limit (km/h)",
        y = "Percent")
   ggplotly()
 ```
 
 ### Analysis
 
-- Table 6.1 showed between 2010 and 2020, fatal crashes is reduced for higher speed zones but increased for lower speed zones
+Figure \@ref(fig:hp-fig-compare) illustrated that not only the number of fatal crashes increased with speed limits, but number of fatalities increased as well, and in higher proportion than the increase of crashes. The difference between number of fatalities and number of crashes are made clearer in figure \@ref(fig:hp-fig-percent-diff). The percentage difference is similar in speed zones of 60 km/h and below, at around 3%. However, the difference for 70-90 km/h is approx. 8% and for highway speed is nearly 13%.
 
-- The speed zone >= 100 kmph accounts for nearly 50% of all fatal crashes in Australia
+### Citations
 
-- Number of fatal crashes and fatalities both increased with speed limits
-
-- Fatalities is 3% higher than number of fatal crashes at lower speed zone, but increase up to 13% for higher speed zone
+Kloeden, C., Woolley, J., & McLean, A. J. (2007, October). A follow-up evaluation of the 50km/h default urban speed limit in South Australia. In Proceedings of.
