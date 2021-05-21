@@ -1,0 +1,99 @@
+---
+title: "T11_Wed_reprex Group work"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    runtime: shiny
+    source_code: embed
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(flexdashboard)
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+library(naniar)
+library(kableExtra)
+```
+
+```{r}
+# read tidy data
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+```
+
+```{r}
+holidays <- fatalcrashes %>%
+  select(State, Year, Month, Christmas.Period, Easter.Period, Time.of.day)
+```
+
+Time related crashes {data-icon="fa-adjust"}
+==================================
+
+Column  
+------------------------
+### Fatal crashes happens monthly in different states
+
+```{r}
+library(lubridate)
+# filter month and check the holidays
+monthly <- holidays %>%
+  mutate(Month = as.factor(Month)) %>%
+  group_by(Month, State)%>%
+  summarise(count = n())
+
+
+#draw line plot
+p1 <- ggplot(monthly, aes(x = Month, 
+                    y = count, 
+                    group = State, 
+                    color = State)) +
+  geom_line()+
+  geom_point(alpha = 0.8, size = 2)+
+  scale_color_brewer(palette = "Set2")+
+  theme_light()
+ggplotly(p1)
+
+```
+
+
+### Data Analysis
++ The month shows that the Christmas period is in December and January. And the Easter period is in March and April.
+
++ Only NSW  and NT has little increase during Easter period, while other states got a decline during such period.
+
++ For Christmas period, the number of crashes only increases in NSW, other states decrease or stay the same.
+
++ There is no clear correlation between fatal crashes with Christmas or Easter holidays.
+
+
+Row
+---------------------------------------------------
+### Fatal crashes happens by day and night
+```{r}
+# check the correlation with night and day
+night <- holidays %>%
+  select(Year, Time.of.day, State) %>%
+  mutate(Time.of.day = as.factor(Time.of.day),
+         Year = as.factor(Year)) %>%
+  group_by(State, Time.of.day, Year) %>%
+  count()
+
+# plot the day and night by year
+p3 <- ggplot(night, 
+       aes(x = n, y = Year, fill = Time.of.day))+
+  geom_bar(stat = "identity", position = "fill")+
+  facet_wrap(~State, nrow = 1)+
+  geom_vline(xintercept = 0.5, color = "yellow")+
+  scale_fill_manual(values=c("#ae7181", "#350631"))+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90))
+  
+ggplotly(p3)
+```
+
+
