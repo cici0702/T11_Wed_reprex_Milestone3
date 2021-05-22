@@ -34,41 +34,65 @@ holidays <- fatalcrashes %>%
 Time related crashes {data-icon="fa-adjust"}
 ==================================
 
-Column  
-------------------------
-### Fatal crashes happens monthly in different states
+Column {data-width=500} 
+-----------------------------------------------------------
+### Fatal crashes happens in Christmas period from 2018 to 2020
 
 ```{r}
-library(lubridate)
 # filter month and check the holidays
 monthly <- holidays %>%
   mutate(Month = as.factor(Month)) %>%
   group_by(Month, State)%>%
-  summarise(count = n())
+  count()
+```
+
+```{r Christmas, fig.align='center'}
+# compare the period of holidays in the last 3 years
+period <- holidays %>%
+  filter(Year %in% c("2018" : "2020"),
+         Month %in% c ("11", "12", "1", "2", "3", "4", "5")) %>%
+  mutate(Month = as.factor(Month)) %>%
+  group_by(Year, Month, State) %>%
+  count() 
+
+period$Month <- factor(period$Month, levels = c("11", "12", "1", "2", "3", "4", "5"))
+orderper <- period[order(period$Month),]
 
 
-#draw line plot
-p1 <- ggplot(monthly, aes(x = Month, 
-                    y = count, 
-                    group = State, 
-                    color = State)) +
+# filter Christmas data
+Christmas <- orderper %>%
+  filter(Month %in% c("11", "12", "1", "2"))
+
+## plot the Christmas change  of recent 6 years
+Christmas_fig <- ggplot(Christmas, aes(x = Month, y = n, color = State, group = State))+
   geom_line()+
   geom_point(alpha = 0.8, size = 2)+
-  scale_color_brewer(palette = "Set2")+
-  theme_light()
-ggplotly(p1)
-
+  scale_color_brewer(palette = "Set1")+
+  theme_classic()+
+  facet_wrap(~Year)
+ggplotly(Christmas_fig)
 ```
 
 
-### Data Analysis
-+ The month shows that the Christmas period is in December and January. And the Easter period is in March and April.
+### Fatal crashes happens in Easter period from 2018 to 2020
 
-+ Only NSW  and NT has little increase during Easter period, while other states got a decline during such period.
+```{r Easter, fig.align='center'}
+# filter Easter data
+Easter <- orderper %>%
+  filter(Month %in% c("2", "3", "4", "5"))
 
-+ For Christmas period, the number of crashes only increases in NSW, other states decrease or stay the same.
+## plot the Christmas change  of recent 6 years
+Easter_fig <- ggplot(Easter, aes(x = Month, y = n, color = State, group = State))+
+  geom_line()+
+  geom_point(alpha = 0.8, size = 2)+
+  scale_color_brewer(palette = "Set1")+
+  theme_classic()+
+  facet_wrap(~Year)
+ggplotly(Easter_fig)
+```
 
-+ There is no clear correlation between fatal crashes with Christmas or Easter holidays.
+
+
 
 
 Row
