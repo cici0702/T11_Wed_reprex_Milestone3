@@ -7,6 +7,8 @@ output:
   fig_caption: yes
   toc: yes
 keep_md: TRUE
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -300,8 +302,7 @@ head(district_fatalities_without_NA)
 From the table above:
 -first table contain value with NA
   -in this table, we don't have detail district information for some cases.              -However, in general, we could see that QLD, NSW, and Vic, these 3 states are top 3 in terms of number of fatal accidents. 
-##-***Be aware, this count do not reflect the actual ranking for the number of accidents.
-
+Be aware, this count do not reflect the actual ranking for the number of accidents.
 -second table contain value without NA
   -in this table, we can conclude:
   +Brisbane in Qld is the district which has the most fatal car accidents happened, which has 87 cases within this 10 years.
@@ -312,4 +313,123 @@ Interpretation:
 QLD, NSW, and Vic are the states that contain top 3 largest amount of population. Therefore, there will be higher chance of having a car accidents. 
 It is the same as the district. Brisbane, Central Coast and Gold Coast are the districts with higher population which may leads to higher chance of an accident happened.
 
+##Q4:
 
+```{r}
+holidays <- fatalcrashes %>%
+  select(State, Year, Month, Christmas.Period, Easter.Period, Time.of.day)
+```
+
+```{r}
+# detect the Christmas and Easter period month first
+holidays1 <- holidays %>%
+  select(Year, Month, Christmas.Period, Easter.Period) %>%
+  filter(Christmas.Period == "Yes" | Easter.Period == "Yes")
+
+unique(holidays1$Month)
+```
+
++ The month shows that the Christmas period is in December and January. And the Easter period is in March and April.
+
+```{r}
+# filter month and check the holidays
+monthly <- holidays %>%
+  mutate(Month = as.factor(Month)) %>%
+  group_by(Month, State)%>%
+  count()
+```
+
+```{r Christmas, fig.align='center', fig.cap= " The fatal crashes happen in Christmas period from 2018 to 2020"}
+# compare the period of holidays in the last 3 years
+library(plotly)
+period <- holidays %>%
+  filter(Year %in% c("2018" : "2020"),
+         Month %in% c ("11", "12", "1", "2", "3", "4", "5")) %>%
+  mutate(Month = as.factor(Month)) %>%
+  group_by(Year, Month, State) %>%
+  count() 
+
+period$Month <- factor(period$Month, levels = c("11", "12", "1", "2", "3", "4", "5"))
+orderper <- period[order(period$Month),]
+
+
+# filter Christmas data
+Christmas <- orderper %>%
+  filter(Month %in% c("11", "12", "1", "2"))
+
+## plot the Christmas change  of recent 6 years
+Christmas_fig <- ggplot(Christmas, aes(x = Month, y = n, color = State, group = State))+
+  geom_line()+
+  geom_point(alpha = 0.8, size = 2)+
+  scale_color_brewer(palette = "Set1")+
+  theme_light()+
+  facet_wrap(~Year)
+ggplotly(Christmas_fig)
+```
+
+It can be seen from \@ref(fig:Christmas) that :
+
++ The number of crashes increases in VIC, WA and NSW in 2018 and 2019 respectively during Christmas period.
+
++ The OLD got a sudden decline in Christmas period of 2020, maybe due to the effectof COVID virus.
+
++ For other states, the crashes either fluctuated or drop. Therefore, there is no dominate correlation between crashes and Christmas.
+
+
+
+```{r Easter, fig.align='center', fig.cap= "The crashes in Easter period from 2018 to 2020"}
+# filter Easter data
+Easter <- orderper %>%
+  filter(Month %in% c("2", "3", "4", "5"))
+
+## plot the Christmas change  of recent 6 years
+Easter_fig <- ggplot(Easter, aes(x = Month, y = n, color = State, group = State))+
+  geom_line()+
+  geom_point(alpha = 0.8, size = 2)+
+  scale_color_brewer(palette = "Set1")+
+  theme_classic()+
+  facet_wrap(~Year)
+ggplotly(Easter_fig)
+```
+
+In Figure \@ref(fig:Easter), in 2018, only WA has a slightly increase in Easter period. For Victoria, the number of crashes drops dramatically in March to April of 2018 and 2020. While other states fluctuate in these period. There is no clear correlation between cashes in Easter period in different states.
+
+
+```{r night, fig.align='center', fig.cap= "Fatal crashes happens by day and night"}
+# check the correlation with night and day
+night <- holidays %>%
+  select(Year, Time.of.day, State) %>%
+  mutate(Time.of.day = as.factor(Time.of.day),
+         Year = as.factor(Year)) %>%
+  group_by(State, Time.of.day, Year) %>%
+  count()
+
+# plot the day and night by year
+p3 <- ggplot(night, 
+       aes(x = n, y = Year, fill = Time.of.day))+
+  geom_bar(stat = "identity", position = "fill")+
+  facet_wrap(~State, nrow = 1)+
+  geom_vline(xintercept = 0.5, color = "yellow")+
+  scale_fill_manual(values=c("#ae7181", "#350631"))+
+  labs(title = "Fatal crashes happens by day and night")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 90))
+  
+ggplotly(p3)
+```
+
+The Figure \@ref(fig:night) compares the fatal crashes that happen in days and night.
++ Obviously, there are more crashes happen on the days than night.
+
++ In 2018 and 2013, the crashes of ACT happen more on night rather than day.
+
++ In NT, some crashes happens more at night than day in 2020, 2018, 2015.
+
+
+
+
+##Q5:
+
+
+
+##Q6:
