@@ -433,12 +433,7 @@ The Figure \@ref(fig:night) compares the fatal crashes that happen in days and n
 
 
 ##Q5:
-<<<<<<< HEAD
-```{r accident rate}
 
-```
-
-=======
 ```{r accident data}
 accident <- fatalcrashes %>%
   mutate(Month = as.factor(Month),
@@ -467,7 +462,6 @@ ggplot(accident2 %>%
   ylab("Number of Crashes") +
   scale_x_continuous(breaks=seq(0,12,1))
 ```
->>>>>>> tina
 
 ```{r accident time series by state, fig.width= 10}
 accident3 <- accident %>%
