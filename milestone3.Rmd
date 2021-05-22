@@ -102,7 +102,7 @@ graph1
 
 
 
-##Q2:Which road user is more prone to accident over the year?
+## Q2:Which road user is more prone to accident over the year?
 
 ```{r, setting-data-roaduser}
 accidents1 <- fatalities_new %>% 
