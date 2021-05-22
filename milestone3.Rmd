@@ -65,29 +65,49 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 
 
 ##Q5:
-```{r accident rate, fig.width= 10}
+```{r accident data}
 accident <- fatalcrashes %>%
   mutate(Month = as.factor(Month),
-         Year = as.factor(Year)) %>%
-  select(-c(Bus.Involvement:Easter.Period)) %>%
-  group_by(State, Month) %>%
-  add_tally()
+         Year = as.factor(Year),
+         date = paste(Month, Year, sep = "/")) %>%
+  select(c("State", "Month", "Year", "date"))
+count(accident, Year)
+```
 
-ggplot(accident,
-       aes(x = Year,
-           fill = State))+
-  geom_bar() +
-  facet_grid(State + .~Month, scales = "free_y")+ 
-  scale_fill_brewer(palette = "Set1")+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle = 90))
+```{r accident aggregatted across years}
+accident2 <-  accident %>%
+  group_by(date) %>%
+  add_tally() %>%
+  select(-State) %>%
+  distinct()
 
-
-ggplot(accident,
+ggplot(accident2 %>%
+         mutate(Month = as.numeric(Month)),
        aes(x = Month,
+           y = n,
+           colour= Year)) +
+  facet_wrap(~Year) +
+  geom_line() + geom_point()+
+  scale_colour_brewer(palette = "Set3")+
+  theme_minimal()+
+  ylab("Number of Crashes") +
+  scale_x_continuous(breaks=seq(0,12,1))
+
+```
+
+```{r accident time series by state, fig.width= 10}
+accident3 <- accident %>%
+        group_by(State, date) %>%
+        add_tally()%>%
+        distinct() %>%
+        arrange(State, date)
+        
+ggplot(accident3,
+       aes(x = Month,
+           y = n,
            fill = State))+
-  geom_bar() +
-  facet_grid(State + .~Year, scales = "free_y")+ 
+  geom_col() +
+  facet_grid(State + .~Year)+ 
   scale_fill_brewer(palette = "Set1")+
   theme_minimal()
 ```

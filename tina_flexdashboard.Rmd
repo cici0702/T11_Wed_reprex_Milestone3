@@ -1,0 +1,54 @@
+---
+title: "HR Movement dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    runtime: shiny
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+# install.packages(c("tidyverse", "readxl", "plotly", "ggmap"))
+library(flexdashboard)
+library(ggplot2)
+library(readxl)
+library(tidyverse)
+library(plotly)
+library(ggmap)
+```
+
+```{r load data}
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+```
+
+Question 5 {data-icon="fa-user-plus"}
+==================
+Column
+--------
+
+### Number of Car Accidents per Month from 2010-2020 by State
+  - ACT has the lowest number of accidents across the years while NSW has the highest number of cases on average.
+  - there doesn't seem to be any pattern across the years.
+```{r}
+accident <- fatalcrashes %>%
+  mutate(Month = as.factor(Month),
+         Year = as.factor(Year)) %>%
+  select(-c(Bus.Involvement:Easter.Period)) %>%
+  group_by(State, Month) %>%
+  add_tally()
+
+accident <- ggplot(accident,
+       aes(x = Month,
+           fill = State))+
+  geom_bar() +
+  facet_grid(State + .~Year)+ 
+  scale_fill_brewer(palette = "Set1")+
+  theme_minimal()
+
+ggplotly(accident)
+```
+
+
+
