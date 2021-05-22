@@ -71,9 +71,9 @@ accident <- fatalcrashes %>%
          Year = as.factor(Year),
          date = paste(Month, Year, sep = "/")) %>%
   select(c("State", "Month", "Year", "date"))
-count(accident, Year)
+count(accident, Year) %>% kable(bookdown = TRUE)
 ```
-
+Although 2019 was the year the pandemic started, it surprisingly was not the year with the lowest number of fatal crashes in total. 
 ```{r accident aggregatted across years}
 accident2 <-  accident %>%
   group_by(date) %>%
@@ -92,7 +92,6 @@ ggplot(accident2 %>%
   theme_minimal()+
   ylab("Number of Crashes") +
   scale_x_continuous(breaks=seq(0,12,1))
-
 ```
 
 ```{r accident time series by state, fig.width= 10}
