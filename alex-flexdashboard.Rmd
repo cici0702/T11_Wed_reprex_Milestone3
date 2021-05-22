@@ -126,6 +126,7 @@ comparison_l %>%
              y = n_fatal, fill = type)) +
   geom_col(position = "dodge") +
   theme_bw() +
+  scale_fill_brewer(palette="Set1") +
   labs(x = "Speed Limit (km/h)",
        y = "Count")
 ggplotly()
