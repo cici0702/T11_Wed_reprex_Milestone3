@@ -44,12 +44,8 @@ library(tidyverse)
 library(naniar)
 library(ggplot2)
 library(kableExtra)
-<<<<<<< HEAD
 library(plotly)
-=======
-library(flexdashboard)
 library(DT)
->>>>>>> eb19d8083d23fe33f9af1e3393ac41f1a8163247
 ```
 
 
