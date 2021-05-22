@@ -1,0 +1,195 @@
+---
+title: "Group Project"
+author: "T11_Wed_reprex"
+output: flexdashboard::flex_dashboard
+  #bookdown::html_document2: default
+  #bookdown::pdf_document2: default
+  #fig_caption: yes
+  #toc: yes
+keep_md: TRUE
+---
+
+
+# Data Description
+The data we have chosen for this project is the Australian Road Deaths Database (ARDD) provided by the Australian Bureau of Infrastructure and Transport Research Economics (BITRE). The records are updated monthly from 1986 to 2021. Here is the link to the database : https://data.gov.au/dataset/ds-dga-5b530fb8-526e-4fbf-b0f6-aa24e84e4277/details. 
+
+There are two data files. The fatality data contains the demographic and details of people who have died within 30 days of the traffic accident due to injuries caused by an Australia road crash. The fatal crashes data contains the records for the crash, including information like the road type, and speed limit. The two data files can be connected by the crash ID. See Appendix for more detailed descriptions of each variable. 
+
+
+# Research Questions:
+Q1: What demographic has a higher rate of traffic accidents?
+
+Q2: Ranking of vehicle types by number of accidents
+
+Q3: How does the car accident fatality link with the district and accident type? 
+
+Q4: Is there any correlation between accidents and holiday? And why are some explanations for the relation(s) or lack thereof.
+
+Q5 :Has accident rate decreased or increased within the past decade (2010- 2020)? 
+
+Q6: Possible correlations between number of fatalities and speed limit zone 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r libraries, echo=FALSE}
+# Loading package tidyverse:
+#install.packages("DT")
+library(tidyverse)
+library(naniar)
+library(ggplot2)
+library(kableExtra)
+library(flexdashboard)
+library(DT)
+```
+
+
+```{r}
+# read tidy data
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+head(fatalcrashes)
+head(fatalities)
+```
+
+# Data Analysis
+
+##Q1:
+
+
+##Q2:
+
+
+##Q3:
+
+District and Accident Type Analysis(Part A)
+===================================== 
+#How does the car accident fatality link with the district and accident type? 
+
+Column {data-width=400}
+-------------------------------------
+
+```{r, eval=TRUE, echo=FALSE}
+
+#no. of fatal accidents with bus involved
+bus_involved <- fatalcrashes %>%
+  filter(Bus.Involvement == "Yes") %>%
+  group_by(State)%>%
+  count() %>%
+  rename("Bus_Involved" = n) 
+
+#no. of fatal accidents with heavy truck involved
+heavytruck_involved <- fatalcrashes %>%
+  filter(Heavy.Rigid.Truck.Involvement == "Yes") %>%
+  group_by(State)%>%
+  count()%>%
+  rename("Heavytruck_Involved" = n)
+
+#no. of fatal accidents with articulated truck involved
+articulated_truck_involved <- fatalcrashes %>%
+  filter(Articulated.Truck.Involvement == "Yes") %>%
+  group_by(State)%>%
+  count()%>%
+  rename("Articulated_truck_Involved" = n)
+
+```
+### Count of Vehicle Type of Fatal Car Accidents 
+
+```{r, eval=TRUE, echo=FALSE}
+#join the above 3 tables and turns them to long format
+accident_car_type_count <- bus_involved %>%
+  full_join(heavytruck_involved) %>%
+  full_join(articulated_truck_involved) %>%
+  pivot_longer(cols = c("Bus_Involved", "Heavytruck_Involved", "Articulated_truck_Involved"),  
+               names_to = "Type",             
+               values_to = "Count")
+kable(head(accident_car_type_count,12))
+```
+
+### Number of Fatal Accidents with Different Car Type in Different State
+```{r, eval=TRUE, echo=FALSE}
+#plot the bar chart for the statistic of accident car type in different states
+ggplot(accident_car_type_count, 
+       aes( x = State, y = Count, fill = Type)) + 
+  geom_col(position = "dodge") + 
+  scale_fill_brewer( palette = "Set1" )+
+  ggtitle("Number of Fatal Accidents with \nDifferent Car Type in Different State")
+
+```
+
+ 
+Column {data-width=400}
+-------------------------------------
+### Count of Different Road User of Fatal Car Accidents 
+```{r, eval=TRUE, echo=FALSE}
+#How does the car accident fatality link with the district and accident type? 
+accident_road_user_count <- fatalities %>%
+  group_by(State, Road.User) %>%
+  count() %>%
+  rename(Count = n)
+kable(head(accident_road_user_count,12))
+```
+
+### Number of Fatal Accidents with Different Road User in Different State
+```{r,eval=TRUE, echo=FALSE}
+#plot the bar chart for the statistic of accident road user type in different states
+ggplot(accident_road_user_count, 
+       aes( x = State, y = Count, fill = Road.User)) + 
+  geom_col(position = "dodge") +
+  scale_fill_brewer( palette = "Set1" )+
+  labs(title = "Number of Fatal Accidents \nwith Different Road User in Different State")
+```
+
+District and Accident Type Analysis(Part B)
+===================================== 
+
+Column {data-width=500}
+-------------------------------------
+
+### Count of Different Crash Type of Fatal Car Accidents 
+
+
+```{r, eval=TRUE, echo=FALSE}
+crash_type <- fatalities %>%
+  group_by(State, Crash.Type) %>%
+  count() %>%
+  rename(Count = n)
+kable(head(crash_type,12))
+```
+### Number of Fatal Accidents with Different Crash Type in Different State
+```{r, eval=TRUE, echo=FALSE}
+#plot the bar chart for the statistic of accident road user type in different states
+ggplot(crash_type, 
+       aes( x = State, y = Count, fill = Crash.Type)) + 
+  geom_col(position = "dodge") +
+  scale_fill_brewer( palette = "Set1" )+
+  labs(title = "Number of Fatal Accidents \nwith Different Crash Type in Different State")
+```
+
+Column {data-width=500}
+-------------------------------------
+
+### Count of Fatal Car Accidents in Different District with NA Value
+```{r, eval=TRUE, echo=FALSE}
+#no. of fatal accidents in different district **with** NA value and arrange in decending order
+district_fatalities <- fatalities %>%
+  group_by(State,National.LGA.Name.2017) %>%
+  count()%>%
+  arrange(desc(n))
+kable(head(district_fatalities,12))
+```
+
+### Count of Fatal Car Accidents in Different District without NA Value
+```{r, eval=TRUE, echo=FALSE}
+#no. of fatal accidents in different district **without** NA value and arrange in decending order
+district_fatalities_without_NA <- fatalities %>%
+  group_by(State,National.LGA.Name.2017) %>%
+  count()%>%
+  filter(!is.na(National.LGA.Name.2017))%>%
+  arrange(desc(n))
+kable(head(district_fatalities_without_NA,12))
+```
+
