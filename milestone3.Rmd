@@ -111,7 +111,7 @@ accident_car_type_count <- bus_involved %>%
                values_to = "Count")
 head(accident_car_type_count)
 ```
-In this table, we have got the count of different type of fatal accidents happened group by different states. This data is in long format which will be easier for us to plot the bar chart for better visualization. 
+In this table, we have got the count of different car type of fatal accidents happened group by different states. This data is in long format which will be easier for us to plot the bar chart for better visualization. 
 
 
 ```{r, eval=TRUE, echo=FALSE}
@@ -216,12 +216,12 @@ head(district_fatalities_without_NA)
 
 From the table above:
 -first table contain value with NA
-  -in this table, we don't have detail district information for some cases.              -However, in general, we could see that QLD, NSW, and Vic, these 3 states are         top 3 in terms of number of fatal accidents. 
+  -in this table, we don't have detail district information for some cases.              -However, in general, we could see that QLD, NSW, and Vic, these 3 states are top 3 in terms of number of fatal accidents. 
 ##-***Be aware, this count do not reflect the actual ranking for the number of accidents.
 
 -second table contain value without NA
   -in this table, we can conclude:
-  +Brisbane in Qld is the district which has the most fatal car accidents happened,     which has 87 cases within this 10 years.
+  +Brisbane in Qld is the district which has the most fatal car accidents happened, which has 87 cases within this 10 years.
   +Follow by Central Coast in NSW which is 82 fatal car accidents happened
   +The third one is Gold Coast which has 68 cases in this 10 years.
   
