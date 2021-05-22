@@ -1,11 +1,11 @@
 ---
 title: "Group Project"
 author: "T11_Wed_reprex"
-output: 
-  bookdown::pdf_document2: default
-  bookdown::html_document2: default
-  fig_caption: yes
-  toc: yes
+output: flexdashboard::flex_dashboard
+  #bookdown::html_document2: default
+  #bookdown::pdf_document2: default
+  #fig_caption: yes
+  #toc: yes
 keep_md: TRUE
 ---
 
@@ -65,13 +65,13 @@ head(fatalities)
 
 ##Q3:
 
-Question 3
-
+District and Accident Type Analysis(Part A)
+===================================== 
 #How does the car accident fatality link with the district and accident type? 
 
+Column {data-width=400}
+-------------------------------------
 
-
-First of all, we group the data by state and the type of car which have involved in the fatal accidents.
 ```{r, eval=TRUE, echo=FALSE}
 
 #no. of fatal accidents with bus involved
@@ -95,11 +95,8 @@ articulated_truck_involved <- fatalcrashes %>%
   count()%>%
   rename("Articulated_truck_Involved" = n)
 
-head(bus_involved)
-head(heavytruck_involved)
-head(articulated_truck_involved)
 ```
-
+### Count of Vehicle Type of Fatal Car Accidents 
 
 ```{r, eval=TRUE, echo=FALSE}
 #join the above 3 tables and turns them to long format
@@ -109,11 +106,10 @@ accident_car_type_count <- bus_involved %>%
   pivot_longer(cols = c("Bus_Involved", "Heavytruck_Involved", "Articulated_truck_Involved"),  
                names_to = "Type",             
                values_to = "Count")
-head(accident_car_type_count)
+kable(head(accident_car_type_count,12))
 ```
-In this table, we have got the count of different type of fatal accidents happened group by different states. This data is in long format which will be easier for us to plot the bar chart for better visualization. 
 
-
+### Number of Fatal Accidents with Different Car Type in Different State
 ```{r, eval=TRUE, echo=FALSE}
 #plot the bar chart for the statistic of accident car type in different states
 ggplot(accident_car_type_count, 
@@ -124,33 +120,20 @@ ggplot(accident_car_type_count,
 
 ```
 
-From the graph above:
- -NSW is the state with highest number of fatal accidents
- -follow by Qld and Vic. 
  
-In all the states:
- -more than half of the total fatal accidents with articulated truck involved. 
- -Accidents with Heavy Truck involved account for the second large portion of the total accidents
- -follow by bus involved accidents. 
- 
-Interpretation:
-Articulated truck is the heaviest among these 3 type of cars. Heavier car impose a greater impact on any accident which cause a higher fatalities. 
-
-Articulated truck is a vehicle which has a permanent or semi-permanent pivot joint in its construction. Only large vehicles need this structure which is easier for them to turn. But it also impose an additional risk for higher fatalities in an accident due to the complex mechanical structure.
-
-Then, we group the data by states and the type of Road Users which have involved in the fatal accidents.
-
-
+Column {data-width=400}
+-------------------------------------
+### Count of Different Road User of Fatal Car Accidents 
 ```{r, eval=TRUE, echo=FALSE}
 #How does the car accident fatality link with the district and accident type? 
 accident_road_user_count <- fatalities %>%
   group_by(State, Road.User) %>%
   count() %>%
   rename(Count = n)
-head(accident_road_user_count)
+kable(head(accident_road_user_count,12))
 ```
 
-
+### Number of Fatal Accidents with Different Road User in Different State
 ```{r,eval=TRUE, echo=FALSE}
 #plot the bar chart for the statistic of accident road user type in different states
 ggplot(accident_road_user_count, 
@@ -160,18 +143,13 @@ ggplot(accident_road_user_count,
   labs(title = "Number of Fatal Accidents \nwith Different Road User in Different State")
 ```
 
-From the graph above:
- 
-In all the states:
- -more than half of the total fatal accidents with drivers involved. 
- -Accidents with Passenger involved account for the second large portion of the total accidents
- -follow by motorcycle rider and then pedestrian involved accidents. 
- 
-Interpretation:
-Most fatal accidents with the drivers and passengers involved. relatively less pedestrian involved in fatal car accidents. We may interpret that most of the people drive in Australia, that is the reason more drivers and passenger involved in fatal car accidents. Another interpretation is most of the car accidents happened in highway or it is a crashed between cars or crashed between car and the road.
+District and Accident Type Analysis(Part B)
+===================================== 
 
+Column {data-width=500}
+-------------------------------------
 
-Then, we group the data by the crash type and count the number of it.
+### Count of Different Crash Type of Fatal Car Accidents 
 
 
 ```{r, eval=TRUE, echo=FALSE}
@@ -179,9 +157,9 @@ crash_type <- fatalities %>%
   group_by(State, Crash.Type) %>%
   count() %>%
   rename(Count = n)
-head(crash_type)
+kable(head(crash_type,12))
 ```
-
+### Number of Fatal Accidents with Different Crash Type in Different State
 ```{r, eval=TRUE, echo=FALSE}
 #plot the bar chart for the statistic of accident road user type in different states
 ggplot(crash_type, 
@@ -190,43 +168,28 @@ ggplot(crash_type,
   scale_fill_brewer( palette = "Set1" )+
   labs(title = "Number of Fatal Accidents \nwith Different Crash Type in Different State")
 ```
-From the graph above:
- 
-In all the states except ACT and Tas:
- -all of the states have more single car crash than multiple car crash in terms of fatal car crashes.
 
+Column {data-width=500}
+-------------------------------------
 
-How does the car accident fatality link with the district?
+### Count of Fatal Car Accidents in Different District with NA Value
 ```{r, eval=TRUE, echo=FALSE}
 #no. of fatal accidents in different district **with** NA value and arrange in decending order
 district_fatalities <- fatalities %>%
   group_by(State,National.LGA.Name.2017) %>%
   count()%>%
   arrange(desc(n))
-head(district_fatalities)
+kable(head(district_fatalities,12))
+```
 
+### Count of Fatal Car Accidents in Different District without NA Value
+```{r, eval=TRUE, echo=FALSE}
 #no. of fatal accidents in different district **without** NA value and arrange in decending order
 district_fatalities_without_NA <- fatalities %>%
   group_by(State,National.LGA.Name.2017) %>%
   count()%>%
   filter(!is.na(National.LGA.Name.2017))%>%
   arrange(desc(n))
-head(district_fatalities_without_NA)
+kable(head(district_fatalities_without_NA,12))
 ```
-
-From the table above:
--first table contain value with NA
-  -in this table, we don't have detail district information for some cases.              -However, in general, we could see that QLD, NSW, and Vic, these 3 states are         top 3 in terms of number of fatal accidents. 
-##-***Be aware, this count do not reflect the actual ranking for the number of accidents.
-
--second table contain value without NA
-  -in this table, we can conclude:
-  +Brisbane in Qld is the district which has the most fatal car accidents happened,     which has 87 cases within this 10 years.
-  +Follow by Central Coast in NSW which is 82 fatal car accidents happened
-  +The third one is Gold Coast which has 68 cases in this 10 years.
-  
-Interpretation:
-QLD, NSW, and Vic are the states that contain top 3 largest amount of population. Therefore, there will be higher chance of having a car accidents. 
-It is the same as the district. Brisbane, Central Coast and Gold Coast are the districts with higher population which may leads to higher chance of an accident happened.
-
 
