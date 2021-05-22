@@ -95,14 +95,50 @@ graph1
 
 + The Australian Road Deaths Database provides basic details of road transport crash fatalities in Australia as reported by the police each month to the State and Territory road safety authorities.
 + Road deaths from recent months are preliminary and the series is subject to revision.
-+ The above graph \@ref(fig:S1Fig1) explains, what demographic has a higher rate of traffic accidents considering **Age.Group** and **Gender** as a factor.
++ The above graph \@ref(fig:Q1Fig1) explains, what demographic has a higher rate of traffic accidents considering **Age.Group** and **Gender** as a factor.
 + The age group between **40 to 64** in both the genders, had the maximum risk of fatal crash involvements compared to the rest of the age groups. 
 + **Male** drivers compared to **Female** for the same age group have the highest rate of road accidents i.e. more than **3000** fatal crashes. Hence, Male drivers between age group **40 t0 64** are more susceptible to the fatal crash involvement.    
  
 
 
 
-##Q2:
+##Q2:Which road user is more prone to accident over the year?
+
+```{r, setting-data-roaduser}
+accidents1 <- fatalities_new %>% 
+  mutate(Year = as.factor(Year)) %>% 
+  select("Year", "Road.User") %>% 
+  filter(Road.User %in% c("Driver", "Motorcycle pillion passenger", "Motorcycle rider", "Passenger", "Pedal cyclist", "Pedestrian")) %>% 
+  group_by(Road.User, Year) %>% 
+  count(Road.User) %>% 
+  rename(`Accident Total count` = n)
+
+head(accidents1)
+
+```
+
+
+```{r Graph2, Q2Fig2, fig.cap= "Australian road deaths database and fatal crashes, by age and gender", fig.show="hold" ,fig.width=5}
+graph2 <- ggplot(accidents1, aes(x = Year, 
+                 y = `Accident Total count`)) +
+  geom_jitter(position = position_jitter(width = 0.5), aes(color = factor(Road.User)), size = 1.5, alpha = 5) +
+  facet_wrap(Road.User~.) +
+  theme(axis.text.x = element_text(size =10)) +
+  theme_dark() +
+  xlab("Year") +
+  ylab("Total number of Accidents")
+
+graph2
+
+```
+
++ This analysis is with respect to the vulnerable Road Users who are prone to road accidents over the years in Australia. 
++ According the above graph \@ref(fig:Q2Fig2), **Driver** is one of the most vulnerable road user prone to accident through-out the years.
++ In **2010** and **2016** driver experienced the peak where there were maximum number of casualties. 
++ Along with that even **Pedestrian**, **Passenger** and **Motorcycle rider** are among the second most vulnerable road user, prone to accident. 
++ The number of casualties for **Motorcycle rider** and **Pedestrian** has mostly been constant through-out the years from **2010 till 2020** 
++ The casualties for **Passenger** shows a slight decrease over the years. 
+
 
 
 ##Q3:
