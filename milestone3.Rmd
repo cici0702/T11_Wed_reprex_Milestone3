@@ -93,6 +93,13 @@ graph1 <- ggplot(data = accidents, aes(x = Age.Group,
 graph1
 ``` 
 
++ The Australian Road Deaths Database provides basic details of road transport crash fatalities in Australia as reported by the police each month to the State and Territory road safety authorities.
++ Road deaths from recent months are preliminary and the series is subject to revision.
++ The above graph \@ref(fig:S1Fig1) explains, what demographic has a higher rate of traffic accidents considering **Age.Group** and **Gender** as a factor.
++ The age group between **40 to 64** in both the genders, had the maximum risk of fatal crash involvements compared to the rest of the age groups. 
++ **Male** drivers compared to **Female** for the same age group have the highest rate of road accidents i.e. more than **3000** fatal crashes. Hence, Male drivers between age group **40 t0 64** are more susceptible to the fatal crash involvement.    
+ 
+
 
 
 ##Q2:
