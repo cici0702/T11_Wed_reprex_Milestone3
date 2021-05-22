@@ -52,7 +52,47 @@ fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
 
 # Data Analysis
 
-##Q1:
+## Q1:What demographic has a higher rate of road accidents or fatal crashes?
++ sex as a factor in accident
++ Age as a factor in accident
+
+```{r setup}
+library(tidyverse)
+library(ggplot2)
+library(readr)
+```
+
+```{r Reading-data}
+fatalities_new <- read.csv(here::here("data/cleaned_fatalities.csv"))
+```
+
+```{r setting-data}
+
+accidents <- fatalities_new %>% 
+  filter(!is.na(Gender)) %>% 
+  select( "Gender", "Age.Group") %>% 
+  group_by( Age.Group) %>% 
+  count(Gender, Age.Group) %>% 
+  rename(`Total no. of accidents` = n)
+
+head(accidents)
+```
+
+
+```{r Graph1, Q1Fig1, fig.cap= "Australian road deaths database and fatal crashes, by age and gender", fig.show="hold" }
+graph1 <- ggplot(data = accidents, aes(x = Age.Group,
+                             y = `Total no. of accidents`, 
+                             fill = Gender)) +
+  geom_bar(stat="identity", position = "dodge") +
+  scale_fill_brewer(palette = "Pastel2")+
+  theme_classic() +
+  xlab("Age Group") +
+  ylab("Total number of Accidents") 
+
+
+graph1
+``` 
+
 
 
 ##Q2:
