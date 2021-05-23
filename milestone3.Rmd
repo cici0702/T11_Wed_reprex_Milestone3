@@ -2,7 +2,6 @@
 title: "Group Project"
 author: "T11_Wed_reprex"
 output: 
-  bookdown::pdf_document2: default
   bookdown::html_document2: default
   fig_caption: yes
   toc: yes
@@ -21,7 +20,7 @@ There are two data files. The fatality data contains the demographic and details
 # Research Questions:
 Q1: What demographic has a higher rate of traffic accidents?
 
-Q2: Ranking of vehicle types by number of accidents
+Q2: Which road user is more prone to accident with respect to States and over the Years?
 
 Q3: How does the car accident fatality link with the district and accident type? 
 
@@ -49,7 +48,7 @@ library(DT)
 ```
 
 
-```{r}
+```{r echo = FALSE}
 # read tidy data
 fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
 fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
@@ -59,35 +58,30 @@ head(fatalities)
 
 # Data Analysis
 
-## Q1:What demographic has a higher rate of road accidents or fatal crashes?
+## Q. What demographic has a higher rate of road accidents or fatal crashes?
 + sex as a factor in accident
 + Age as a factor in accident
 
-```{r setup}
+```{r}
 library(tidyverse)
 library(ggplot2)
 library(readr)
 ```
 
-```{r Reading-data}
-fatalities_new <- read.csv(here::here("data/cleaned_fatalities.csv"))
-```
 
 ```{r setting-data}
 
-accidents <- fatalities_new %>% 
+accidents0 <- fatalities %>% 
   filter(!is.na(Gender)) %>% 
   select( "Gender", "Age.Group") %>% 
   group_by( Age.Group) %>% 
   count(Gender, Age.Group) %>% 
   rename(`Total no. of accidents` = n)
-
-head(accidents)
 ```
 
 
-```{r Graph1, Q1Fig1, fig.cap= "Australian road deaths database and fatal crashes, by age and gender", fig.show="hold" }
-graph1 <- ggplot(data = accidents, aes(x = Age.Group,
+```{r Graph1, fig.cap= "Australian road deaths database and fatal crashes, by age and gender", fig.show="hold" }
+graph1 <- ggplot(data = accidents0, aes(x = Age.Group,
                              y = `Total no. of accidents`, 
                              fill = Gender)) +
   geom_bar(stat="identity", position = "dodge") +
@@ -100,19 +94,22 @@ graph1 <- ggplot(data = accidents, aes(x = Age.Group,
 graph1
 ``` 
 
+### Analysis
+
 + The Australian Road Deaths Database provides basic details of road transport crash fatalities in Australia as reported by the police each month to the State and Territory road safety authorities.
 + Road deaths from recent months are preliminary and the series is subject to revision.
-+ The above graph \@ref(fig:Q1Fig1) explains, what demographic has a higher rate of traffic accidents considering **Age.Group** and **Gender** as a factor.
++ The above graph \@ref(fig:Graph1) explains, what demographic has a higher rate of traffic accidents considering **Age.Group** and **Gender** as a factor.
 + The age group between **40 to 64** in both the genders, had the maximum risk of fatal crash involvements compared to the rest of the age groups. 
 + **Male** drivers compared to **Female** for the same age group have the highest rate of road accidents i.e. more than **3000** fatal crashes. Hence, Male drivers between age group **40 t0 64** are more susceptible to the fatal crash involvement.    
  
 
 
 
-## Q2:Which road user is more prone to accident over the year?
+## Q. Which road user is more prone to accident with the States and over the Year?
+
 
 ```{r, setting-data-roaduser}
-accidents1 <- fatalities_new %>% 
+accidents1 <- fatalities %>% 
   mutate(Year = as.factor(Year)) %>% 
   select("Year", "Road.User") %>% 
   filter(Road.User %in% c("Driver", "Motorcycle pillion passenger", "Motorcycle rider", "Passenger", "Pedal cyclist", "Pedestrian")) %>% 
@@ -120,12 +117,10 @@ accidents1 <- fatalities_new %>%
   count(Road.User) %>% 
   rename(`Accident Total count` = n)
 
-head(accidents1)
-
 ```
 
-
-```{r Graph2, Q2Fig2, fig.cap= "Australian road deaths database and fatal crashes, by age and gender", fig.show="hold" ,fig.width=5}
+**With respect to Year**
+```{r Graph2, fig.cap= "Australian road deaths database and fatal crashes, by age and gender", fig.show="hold" ,fig.width=15, fig.height=6, fig.align = "center"}
 graph2 <- ggplot(accidents1, aes(x = Year, 
                  y = `Accident Total count`)) +
   geom_jitter(position = position_jitter(width = 0.5), aes(color = factor(Road.User)), size = 1.5, alpha = 5) +
@@ -139,24 +134,59 @@ graph2
 
 ```
 
+### Analysis
+
 + This analysis is with respect to the vulnerable Road Users who are prone to road accidents over the years in Australia. 
-+ According the above graph \@ref(fig:Q2Fig2), **Driver** is one of the most vulnerable road user prone to accident through-out the years.
++ According the above graph \@ref(fig:Graph2), **Driver** is one of the most vulnerable road user prone to accident through-out the years.
 + In **2010** and **2016** driver experienced the peak where there were maximum number of casualties. 
 + Along with that even **Pedestrian**, **Passenger** and **Motorcycle rider** are among the second most vulnerable road user, prone to accident. 
 + The number of casualties for **Motorcycle rider** and **Pedestrian** has mostly been constant through-out the years from **2010 till 2020** 
 + The casualties for **Passenger** shows a slight decrease over the years. 
 
 
+**we group the data by states and the type of Road Users which have involved in the fatal accidents.**
 
-##Q3:
-
-Question 3
-
+```{r, eval=TRUE, echo=FALSE}
 #How does the car accident fatality link with the district and accident type? 
+accident_road_user_count <- fatalities %>% 
+  select("State", "Road.User") %>% 
+  filter(Road.User %in% c("Driver", "Motorcycle pillion passenger", "Motorcycle rider", "Passenger", "Pedal cyclist", "Pedestrian")) %>% 
+  group_by(Road.User, State) %>% 
+  count(Road.User) %>% 
+  rename(`Accident Total count` = n)
+```
+
+
+```{r Graph3, fig.cap ="Number of Fatal Accidents with Different Road User in Different State"}
+#plot the bar chart for the statistic of accident road user type in different states
+graph3 <- ggplot(accident_road_user_count, 
+       aes( x = State, y = `Accident Total count`, fill = Road.User)) + 
+  geom_col(position = "dodge") +
+  scale_fill_brewer( palette = "Set1" )
+
+graph3
+```
+
+### Analysis
+
+From the graph above \@ref(fig:Graph3):
+ 
+In all the states
+
++ more than half of the total fatal accidents with drivers involved. 
++ Accidents with Passenger involved account for the second large portion of the total accidents
++ follow by motorcycle rider and then pedestrian involved accidents. 
+ 
+Interpretation:
+
++ Most fatal accidents with the drivers and passengers involved. relatively less pedestrian involved in fatal car accidents. We may interpret that most of the people drive in Australia, that is the reason more drivers and passenger involved in fatal car accidents. Another interpretation is most of the car accidents happened in highway or it is a crashed between cars or crashed between car and the road.
 
 
 
-First of all, we group the data by state and the type of car which have involved in the fatal accidents.
+## Q. How does the car accident fatality link with the district and accident type? 
+
+**First of all, we group the data by state and the type of car which have involved in the fatal accidents.**
+
 ```{r, eval=TRUE, echo=FALSE}
 
 #no. of fatal accidents with bus involved
@@ -196,6 +226,9 @@ accident_car_type_count <- bus_involved %>%
                values_to = "Count")
 head(accident_car_type_count)
 ```
+
+### Analysis
+
 In this table, we have got the count of different car type of fatal accidents happened group by different states. This data is in long format which will be easier for us to plot the bar chart for better visualization. 
 
 
@@ -209,55 +242,27 @@ ggplot(accident_car_type_count,
 
 ```
 
-From the graph above:
- -NSW is the state with highest number of fatal accidents
- -follow by Qld and Vic. 
- 
-In all the states:
- -more than half of the total fatal accidents with articulated truck involved. 
- -Accidents with Heavy Truck involved account for the second large portion of the total accidents
- -follow by bus involved accidents. 
- 
-Interpretation:
-Articulated truck is the heaviest among these 3 type of cars. Heavier car impose a greater impact on any accident which cause a higher fatalities. 
-
-Articulated truck is a vehicle which has a permanent or semi-permanent pivot joint in its construction. Only large vehicles need this structure which is easier for them to turn. But it also impose an additional risk for higher fatalities in an accident due to the complex mechanical structure.
-
-Then, we group the data by states and the type of Road Users which have involved in the fatal accidents.
-
-
-```{r, eval=TRUE, echo=FALSE}
-#How does the car accident fatality link with the district and accident type? 
-accident_road_user_count <- fatalities %>%
-  group_by(State, Road.User) %>%
-  count() %>%
-  rename(Count = n)
-head(accident_road_user_count)
-```
-
-
-```{r,eval=TRUE, echo=FALSE}
-#plot the bar chart for the statistic of accident road user type in different states
-ggplot(accident_road_user_count, 
-       aes( x = State, y = Count, fill = Road.User)) + 
-  geom_col(position = "dodge") +
-  scale_fill_brewer( palette = "Set1" )+
-  labs(title = "Number of Fatal Accidents \nwith Different Road User in Different State")
-```
+### Analysis
 
 From the graph above:
+
++ NSW is the state with highest number of fatal accidents
++ Follow by Qld and Vic. 
  
 In all the states:
- -more than half of the total fatal accidents with drivers involved. 
- -Accidents with Passenger involved account for the second large portion of the total accidents
- -follow by motorcycle rider and then pedestrian involved accidents. 
+
++ More than half of the total fatal accidents with articulated truck involved. 
++ Accidents with Heavy Truck involved account for the second large portion of the total accidents
++ Follow by bus involved accidents. 
  
 Interpretation:
-Most fatal accidents with the drivers and passengers involved. relatively less pedestrian involved in fatal car accidents. We may interpret that most of the people drive in Australia, that is the reason more drivers and passenger involved in fatal car accidents. Another interpretation is most of the car accidents happened in highway or it is a crashed between cars or crashed between car and the road.
+
++ Articulated truck is the heaviest among these 3 type of cars. Heavier car impose a greater impact on any accident which cause a higher fatalities. 
+
++ Articulated truck is a vehicle which has a permanent or semi-permanent pivot joint in its construction. Only large vehicles need this structure which is easier for them to turn. But it also impose an additional risk for higher fatalities in an accident due to the complex mechanical structure.
 
 
-Then, we group the data by the crash type and count the number of it.
-
+**Then, we group the data by the crash type and count the number of it.**
 
 ```{r, eval=TRUE, echo=FALSE}
 crash_type <- fatalities %>%
@@ -275,13 +280,18 @@ ggplot(crash_type,
   scale_fill_brewer( palette = "Set1" )+
   labs(title = "Number of Fatal Accidents \nwith Different Crash Type in Different State")
 ```
+
+### Analysis
+
 From the graph above:
  
-In all the states except ACT and Tas:
- -all of the states have more single car crash than multiple car crash in terms of fatal car crashes.
+In all the states except ACT and TAS:
+
++ All of the states have more single car crash than multiple car crash in terms of fatal car crashes.
 
 
 How does the car accident fatality link with the district?
+
 ```{r, eval=TRUE, echo=FALSE}
 #no. of fatal accidents in different district **with** NA value and arrange in decending order
 district_fatalities <- fatalities %>%
@@ -299,26 +309,33 @@ district_fatalities_without_NA <- fatalities %>%
 head(district_fatalities_without_NA)
 ```
 
+### Analysis
+
 From the table above:
--first table contain value with NA
-  -in this table, we don't have detail district information for some cases.              -However, in general, we could see that QLD, NSW, and Vic, these 3 states are top 3 in terms of number of fatal accidents. 
-Be aware, this count do not reflect the actual ranking for the number of accidents.
--second table contain value without NA
-  -in this table, we can conclude:
-  +Brisbane in Qld is the district which has the most fatal car accidents happened, which has 87 cases within this 10 years.
-  +Follow by Central Coast in NSW which is 82 fatal car accidents happened
-  +The third one is Gold Coast which has 68 cases in this 10 years.
+
++ First table contain value with NA
++ In this table, we don't have detail district information for some cases.             
++ However, in general, we could see that QLD, NSW, and Vic, these 3 states are top 3 in terms of number of fatal accidents. 
++ Be aware, this count do not reflect the actual ranking for the number of accidents.
++ Second table contain value without NA
++ In this table, we can conclude:
++ Brisbane in Qld is the district which has the most fatal car accidents happened, which has 87 cases within this 10 years.
++ Follow by Central Coast in NSW which is 82 fatal car accidents happened
++ The third one is Gold Coast which has 68 cases in this 10 years.
   
 Interpretation:
-QLD, NSW, and Vic are the states that contain top 3 largest amount of population. Therefore, there will be higher chance of having a car accidents. 
-It is the same as the district. Brisbane, Central Coast and Gold Coast are the districts with higher population which may leads to higher chance of an accident happened.
 
-##Q4:
++ QLD, NSW, and Vic are the states that contain top 3 largest amount of population. Therefore, there will be higher chance of having a car accidents. 
++ It is the same as the district. Brisbane, Central Coast and Gold Coast are the districts with higher population which may leads to higher chance of an accident happened.
+
+
+## Is there any correlation between accidents and holiday? And why are some explanations for the relation(s) or lack thereof.
 
 ```{r}
 holidays <- fatalcrashes %>%
   select(State, Year, Month, Christmas.Period, Easter.Period, Time.of.day)
 ```
+
 
 ```{r}
 # detect the Christmas and Easter period month first
@@ -329,6 +346,8 @@ holidays1 <- holidays %>%
 unique(holidays1$Month)
 ```
 
+### Analysis
+
 + The month shows that the Christmas period is in December and January. And the Easter period is in March and April.
 
 ```{r}
@@ -338,6 +357,7 @@ monthly <- holidays %>%
   group_by(Month, State)%>%
   count()
 ```
+
 
 ```{r Christmas, fig.align='center', fig.cap= " The fatal crashes happen in Christmas period from 2018 to 2020"}
 # compare the period of holidays in the last 3 years
@@ -367,6 +387,8 @@ Christmas_fig <- ggplot(Christmas, aes(x = Month, y = n, color = State, group = 
 ggplotly(Christmas_fig)
 ```
 
+### Analysis
+
 It can be seen from \@ref(fig:Christmas) that :
 
 + The number of crashes increases in VIC, WA and NSW in 2018 and 2019 respectively during Christmas period.
@@ -391,6 +413,8 @@ Easter_fig <- ggplot(Easter, aes(x = Month, y = n, color = State, group = State)
   facet_wrap(~Year)
 ggplotly(Easter_fig)
 ```
+
+### Analysis
 
 In Figure \@ref(fig:Easter), in 2018, only WA has a slightly increase in Easter period. For Victoria, the number of crashes drops dramatically in March to April of 2018 and 2020. While other states fluctuate in these period. There is no clear correlation between cashes in Easter period in different states.
 
@@ -418,6 +442,8 @@ p3 <- ggplot(night,
 ggplotly(p3)
 ```
 
+### Analysis
+
 The Figure \@ref(fig:night) compares the fatal crashes that happen in days and night.
 + Obviously, there are more crashes happen on the days than night.
 
@@ -428,7 +454,7 @@ The Figure \@ref(fig:night) compares the fatal crashes that happen in days and n
 
 
 
-##Q5:
+## Q. Has accident rate decreased or increased within the past decade (2010- 2020)? 
 
 ```{r accident data}
 accident <- fatalcrashes %>%
@@ -436,9 +462,13 @@ accident <- fatalcrashes %>%
          Year = as.factor(Year),
          date = paste(Month, Year, sep = "/")) %>%
   select(c("State", "Month", "Year", "date"))
-count(accident, Year) %>% kable(bookdown = TRUE)
+
 ```
-Although 2019 was the year the pandemic started, it surprisingly was not the year with the lowest number of fatal crashes in total. 
+
+### Analysis
+
+Although 2019 was the year the pandemic started, it surprisingly was not the year with the lowest number of fatal crashes in total.
+
 ```{r accident aggregatted across years}
 accident2 <-  accident %>%
   group_by(date) %>%
@@ -476,7 +506,7 @@ ggplot(accident3,
   theme_minimal()
 ```
 
-##Q6:
+## Q. Possible correlations between number of fatalities and speed limit zone 
 
 ```{r hp-clean-fatal, echo=F}
 fatalities$Speed.Limit <-
@@ -544,7 +574,7 @@ crash_sl_l %>% mutate(Speed_limit = fct_reorder(Speed_limit, n_crashes)) %>%
   geom_col(position = "fill") +
   scale_fill_brewer(palette="Set1") +
   theme(axis.title.x = element_blank())
-ggplotly()
+
 ```
 
 ### Analysis
@@ -579,7 +609,7 @@ comparison_l %>%
   theme_bw() +
   labs(x = "Speed Limit (km/h)",
        y = "Count")
-ggplotly()
+
 ```
 
 
@@ -592,7 +622,7 @@ comparison_pct %>%
   theme_bw() +
   labs(x = "Speed Limit (km/h)",
        y = "Percent")
-  ggplotly()
+  
 ```
 
 ### Analysis
