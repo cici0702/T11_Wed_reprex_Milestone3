@@ -1,0 +1,134 @@
+---
+title: "pranali-flexdashboard"
+author: "Pranali Angne"
+date: "5/21/2021"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    source_code: embed
+---
+
+```{r libraries, echo=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(naniar)
+library(ggplot2)
+library(kableExtra)
+library(plotly)
+```
+
+```{r}
+# read tidy data
+fatalcrashes <- read.csv(here::here("data/cleaned_fatalcrashes.csv"))
+fatalities <- read.csv(here::here("data/cleaned_fatalities.csv"))
+```
+
+
+Question 1 {data-icon="fa-car-crash"}
+====================
+
+### Table 3.1: Australian road deaths database and fatal crashes, by age and gender
+
+```{r setting-data}
+
+accidents0 <- fatalities %>% 
+  filter(!is.na(Gender)) %>% 
+  select( "Gender", "Age.Group") %>% 
+  group_by( Age.Group) %>% 
+  count(Gender, Age.Group) %>% 
+  rename(`Total no. of accidents` = n)
+```
+
+
+```{r Graph1}
+graph1 <- ggplot(data = accidents0, aes(x = Age.Group,
+                             y = `Total no. of accidents`, 
+                             fill = Gender)) +
+  geom_bar(stat="identity", position = "dodge") +
+  scale_fill_brewer(palette = "Pastel2")+
+  theme_classic() +
+  xlab("Age Group") +
+  ylab("Total number of Accidents") 
+
+
+graph1
+``` 
+
+### Analysis 
+
++ The Australian Road Deaths Database provides basic details of road transport crash fatalities in Australia as reported by the police each month to the State and Territory road safety authorities.
+
+
++ Road deaths from recent months are preliminary and the series is subject to revision.
+
+
++ The above graph explains, what demographic has a higher rate of traffic accidents considering **Age.Group** and **Gender** as a factor.
+
+
++ The age group between **40 to 64** in both the genders, had the maximum risk of fatal crash involvements compared to the rest of the age groups. 
+
+
++ **Male** drivers compared to **Female** for the same age group have the highest rate of road accidents i.e. more than **3000** fatal crashes. Hence, Male drivers between age group **40 t0 64** are more susceptible to the fatal crash involvement.    
+ 
+
+
+
+Question 2 {data-icon="fa-car-crash"}
+====================
+
+### Graph 3.2: Road user is more prone to accident over the Year
+
+```{r, setting-data-roaduser}
+accidents1 <- fatalities %>% 
+  mutate(Year = as.factor(Year)) %>% 
+  select("Year", "Road.User") %>% 
+  filter(Road.User %in% c("Driver", "Motorcycle pillion passenger", "Motorcycle rider", "Passenger", "Pedal cyclist", "Pedestrian")) %>% 
+  group_by(Road.User, Year) %>% 
+  count(Road.User) %>% 
+  rename(`Accident Total count` = n)
+
+```
+
+
+```{r Graph2, fig.width=15, fig.height=6}
+graph2 <- ggplot(accidents1, aes(x = Year, 
+                 y = `Accident Total count`)) +
+  geom_jitter(position = position_jitter(width = 0.5), aes(color = factor(Road.User)), size = 1.5, alpha = 5) +
+  facet_wrap(Road.User~.) +
+  theme(axis.text.x = element_text(size =10)) +
+  theme_dark() +
+  xlab("Year") +
+  ylab("Total number of Accidents")
+
+graph2
+
+```
+
+
+### Graph 3.3: Road user is more prone to accident with respect to state
+
+```{r, eval=TRUE, echo=FALSE}
+#How does the car accident fatality link with the district and accident type? 
+accident_road_user_count <- fatalities %>% 
+  select("State", "Road.User") %>% 
+  filter(Road.User %in% c("Driver", "Motorcycle pillion passenger", "Motorcycle rider", "Passenger", "Pedal cyclist", "Pedestrian")) %>% 
+  group_by(Road.User, State) %>% 
+  count(Road.User) %>% 
+  rename(`Accident Total count` = n)
+```
+
+
+```{r Graph3}
+#plot the bar chart for the statistic of accident road user type in different states
+graph3 <- ggplot(accident_road_user_count, 
+       aes( x = State, y = `Accident Total count`, fill = Road.User)) + 
+  geom_col(position = "dodge") +
+  scale_fill_brewer( palette = "Set1" )
+
+graph3
+```
+
+
+
+
